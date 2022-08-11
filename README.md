@@ -1,52 +1,165 @@
-# Full Stack API Final Project
+# Backend - Full Stack Trivia API 
+
+### Installing Dependencies for the Backend
+
+1. **Python 3.7** - Follow instructions to install the latest version of python for your platform in the [python docs](https://docs.python.org/3/using/unix.html#getting-and-installing-the-latest-version-of-python)
 
 
-## Full Stack Trivia
+2. **Virtual Enviornment** - We recommend working within a virtual environment whenever using Python for projects. This keeps your dependencies for each project separate and organaized. Instructions for setting up a virual enviornment for your platform can be found in the [python docs](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/)
 
-Udacity is invested in creating bonding experiences for its employees and students. A bunch of team members got the idea to hold trivia on a regular basis and created a webpage to manage the trivia app and play the game, but their API experience is limited and still needs to be built out.
 
-That's where you come in! Help them finish the trivia app so they can start holding trivia and seeing who's the most knowledgeable of the bunch. The application must:
+3. **PIP Dependencies** - Once you have your virtual environment setup and running, install dependencies by naviging to the `/backend` directory and running:
+```bash
+pip install -r requirements.txt
+```
+This will install all of the required packages we selected within the `requirements.txt` file.
 
-1. Display questions - both all questions and by category. Questions should show the question, category and difficulty rating by default and can show/hide the answer.
-2. Delete questions.
-3. Add questions and require that they include question and answer text.
-4. Search for questions based on a text query string.
-5. Play the quiz game, randomizing either all questions or within a specific category.
 
-Completing this trivia app will give you the ability to structure plan, implement, and test an API - skills essential for enabling your future applications to communicate with others.
+4. **Key Dependencies**
+ - [Flask](http://flask.pocoo.org/)  is a lightweight backend microservices framework. Flask is required to handle requests and responses.
 
-## Starting and Submitting the Project
+ - [SQLAlchemy](https://www.sqlalchemy.org/) is the Python SQL toolkit and ORM we'll use handle the lightweight sqlite database. You'll primarily work in app.py and can reference models.py. 
 
-[Fork](https://help.github.com/en/articles/fork-a-repo) the [project repository](https://github.com/udacity/FSND/blob/master/projects/02_trivia_api/starter) and [Clone](https://help.github.com/en/articles/cloning-a-repository) your forked repository to your machine. Work on the project locally and make sure to push all your changes to the remote repository before submitting the link to your repository in the Classroom.
->Once you're ready, you can submit your project on the last page.
+ - [Flask-CORS](https://flask-cors.readthedocs.io/en/latest/#) is the extension we'll use to handle cross origin requests from our frontend server. 
 
-## About the Stack
+### Database Setup
+With Postgres running, restore a database using the trivia.psql file provided. From the backend folder in terminal run:
+```bash
+psql trivia < trivia.psql
+```
 
-We started the full stack application for you. It is designed with some key functional areas:
+### Running the server
 
-### Backend
-The [./backend](https://github.com/udacity/FSND/blob/master/projects/02_trivia_api/starter/backend/README.md) directory contains a partially completed Flask and SQLAlchemy server. You will work primarily in `__init__.py` to define your endpoints and can reference models.py for DB and SQLAlchemy setup. These are the files you'd want to edit in the backend:
+From within the `./src` directory first ensure you are working using your created virtual environment.
+
+To run the server, execute:
+
+```bash
+flask run --reload
+```
+
+The `--reload` flag will detect file changes and restart the server automatically.
+
+## ToDo Tasks
+These are the files you'd want to edit in the backend:
 
 1. *./backend/flaskr/`__init__.py`*
 2. *./backend/test_flaskr.py*
 
 
-### Frontend
+One note before you delve into your tasks: for each endpoint, you are expected to define the endpoint and response data. The frontend will be a plentiful resource because it is set up to expect certain endpoints and response data formats already. You should feel free to specify endpoints in your own way; if you do so, make sure to update the frontend or you will get some unexpected behavior. 
 
-The [./frontend](https://github.com/udacity/FSND/blob/master/projects/02_trivia_api/starter/frontend/README.md) directory contains a complete React frontend to consume the data from the Flask server. If you have prior experience building a frontend application, you should feel free to edit the endpoints as you see fit for the backend you design. If you do not have prior experience building a frontend application, you should read through the frontend code before starting and make notes regarding:
-
-1. What are the end points and HTTP methods the frontend is expecting to consume?
-2. How are the requests from the frontend formatted? Are they expecting certain parameters or payloads? 
-
-Pay special attention to what data the frontend is expecting from each API response to help guide how you format your API. The places where you may change the frontend behavior, and where you should be looking for the above information, are marked with `TODO`. These are the files you'd want to edit in the frontend:
-
-1. *./frontend/src/components/QuestionView.js*
-2. *./frontend/src/components/FormView.js*
-3. *./frontend/src/components/QuizView.js*
+1. Use Flask-CORS to enable cross-domain requests and set response headers. 
 
 
-By making notes ahead of time, you will practice the core skill of being able to read and understand code and will have a simple plan to follow to build out the endpoints of your backend API. 
+2. Create an endpoint to handle GET requests for questions, including pagination (every 10 questions). This endpoint should return a list of questions, number of total questions, current category, categories. 
+
+
+3. Create an endpoint to handle GET requests for all available categories. 
+
+
+4. Create an endpoint to DELETE question using a question ID. 
+
+
+5. Create an endpoint to POST a new question, which will require the question and answer text, category, and difficulty score. 
+
+
+6. Create a POST endpoint to get questions based on category. 
+
+
+7. Create a POST endpoint to get questions based on a search term. It should return any questions for whom the search term is a substring of the question. 
+
+
+8. Create a POST endpoint to get questions to play the quiz. This endpoint should take category and previous question parameters and return a random questions within the given category, if provided, and that is not one of the previous questions. 
+
+
+9. Create error handlers for all expected errors including 400, 404, 422 and 500. 
 
 
 
->View the [README within ./frontend for more details.](./frontend/README.md)
+### API Reference
+
+## Endpoints
+GET /categories
+Request Arguments: None
+Returns a dictionary of categories, show below
+````
+{
+  "categories": {
+    "1": "Science", 
+    "2": "Art", 
+    "3": "Geography", 
+    "4": "History", 
+    "5": "Entertainment", 
+    "6": "Sports"
+}
+````
+DELETE /questions/{id}
+Request Arguments: question's id
+Deletes the question of the given ID if it exists. Returns an object that contains success.
+
+````
+{
+  "success": true
+}
+````
+POST /questions/{id}
+Request Arguments: question's id
+
+Creates a new question using the form information that user inserts. Returns the id of the created question id, success value
+````
+{
+  "created": 13,   
+  "success": true,  
+}
+````
+GET /categories/{id}/questions
+Request Arguments: category's id
+
+Returns a list of questions, currentCategory,  total_questions and success value
+````
+{
+  "success": true,   
+  "questions": [
+    {
+      "answer": "Lake Victoria", 
+      "category": "3", 
+      "difficulty": 2, 
+      "id": 13, 
+      "question": "What is the largest lake in Africa?"
+    }, 
+    {
+      "answer": "The Palace of Versailles", 
+      "category": "3", 
+      "difficulty": 3, 
+      "id": 14, 
+      "question": "In which royal palace would you find the Hall of Mirrors?"
+    }, 
+    {
+      "answer": "Agra", 
+      "category": "3", 
+      "difficulty": 2, 
+      "id": 15, 
+      "question": "The Taj Mahal is located in which Indian city?"
+    }
+  ], 
+  "currentCategory": "Geography", 
+  "totalQuestions": 3
+}
+````
+POST /quizzes
+
+recive the actual question and the category
+return the next question in the same category and success value.
+````
+{
+  "question": {
+    "answer": "Agra", 
+    "category": "3", 
+    "difficulty": 2, 
+    "id": 15, 
+    "question": "The Taj Mahal is located in which Indian city?"
+  }, 
+  "success": true
+}
+````
