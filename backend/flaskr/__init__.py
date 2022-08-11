@@ -72,7 +72,9 @@ def create_app(test_config=None):
       selections = Question.query.order_by(Question.id).all()
       questions = pagination(request, selections)
       formatted_questions = [question.format() for question in questions]
+
       categories = Category.query.order_by(Category.id).all()
+      formatted_categories = {category.id: category.type for category in categories}
 
       if len(questions) == 0:
         abort(404)
@@ -81,7 +83,7 @@ def create_app(test_config=None):
         "success": True,
         "questions": formatted_questions,
         "totalQuestions": len(formatted_questions),
-        "categories": {category.id: category.type for category in categories},
+        "categories": formatted_categories,
         "currentCategory": None
       })
     
@@ -122,16 +124,16 @@ def create_app(test_config=None):
   def create_question():
     body = request.get_json()
 
-    if not ('question' in body and 'answer' in body and 'difficulty' in body and 'category' in body):
-        abort(422)
+    question = body.get('question', None)
+    answer = body.get('answer', None)
+    difficulty = body.get('difficulty', None)
+    category = body.get('category', None)
 
-    new_question = body.get('question')
-    new_answer = body.get('answer')
-    new_difficulty = body.get('difficulty')
-    new_category = body.get('category')
+    if question is None or answer is None or difficulty is None or category is None:
+      abort(422)
 
     try:
-      question = Question(question=new_question, answer=new_answer, difficulty=new_difficulty, category=new_category)
+      question = Question(question=question, answer=answer, difficulty=difficulty, category=category)
       question.insert()
 
       return jsonify({
@@ -215,28 +217,38 @@ def create_app(test_config=None):
   def get_quiz_by_category():
     try:
       body = request.get_json()
+      # a list
+      previous_questions = body.get('previous_questions', None)
+      # an object
+      quiz_category = body.get('quiz_category', None)
 
-      if not ('quiz_category' in body and 'previous_questions' in body):
-          abort(422)
+      if previous_questions is None or quiz_category is None:
+        abort(422)
 
-      category = body.get('quiz_category')
-      previous_questions = body.get('previous_questions')
-      print(category)
-
+     
+      # {'previous_questions': [], 'quiz_category': {'type': 'click', 'id': 0}}
+      # {'type': 'click', 'id': 0}
+      print(previous_questions)
       # when category is all
-      if category['type'] == 'click':
+      if quiz_category['type'] == 'click':
         # notin_ mean not in 
-          available_questions = Question.query.filter(Question.id.notin_((previous_questions))).all()
+        questions = Question.query.all()
       else:
-          available_questions = Question.query.filter_by(category=category['id']).filter(Question.id.notin_((previous_questions))).all()
+        questions = Question.query.filter(Question.category == quiz_category['id']).all()
+      
+      random_num = random.randrange(len(questions))
+      next_question = questions[random_num].format()
+      question_id = next_question['id']
 
-      new_question = available_questions[random.randrange(0, len(available_questions))].format() if len(available_questions) > 0 else None
+      while question_id in previous_questions:
+        random_num = random.randrange(len(questions))
+        next_question = questions[random_num].format()
+        question_id = next_question['id']
 
       return jsonify({
           'success': True,
-          'question': new_question
+          'question': next_question
       })
-
     except:
       abort(422)
 
