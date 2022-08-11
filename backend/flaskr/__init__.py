@@ -16,7 +16,13 @@ def create_app(test_config=None):
   '''
   @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
   '''
+  CORS(app)
 
+  @app.after_request
+  def after_request(response): 
+      response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
+      response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+      return response
   '''
   @TODO: Use the after_request decorator to set Access-Control-Allow
   '''
@@ -26,6 +32,19 @@ def create_app(test_config=None):
   Create an endpoint to handle GET requests 
   for all available categories.
   '''
+  @app.route('/categories')
+  def get_categories():
+    categories = Category.query.order_by(Category.type).all()
+    formatted_categories = {category.id: category.type for category in categories}
+
+    if len(formatted_categories) == 0:
+      abort(404)
+    
+    return jsonify({
+      "success": True,
+      'categories': formatted_categories
+    })
+    
 
 
   '''
@@ -40,6 +59,32 @@ def create_app(test_config=None):
   ten questions per page and pagination at the bottom of the screen for three pages.
   Clicking on the page numbers should update the questions. 
   '''
+  def pagination(req, selections):
+    showing_pages = 10
+    page = req.args.get('page', 1, type=int)
+    start = (page - 1) * showing_pages
+    end = start + showing_pages
+    return selections[start: end]
+
+  @app.route('/questions')
+  def get_questions():
+    
+      selections = Question.query.order_by(Question.id).all()
+      questions = pagination(request, selections)
+      formatted_questions = [question.format() for question in questions]
+      categories = Category.query.order_by(Category.id).all()
+
+      if len(questions) == 0:
+        abort(404)
+
+      return jsonify({
+        "success": True,
+        "questions": formatted_questions,
+        "totalQuestions": len(formatted_questions),
+        "categories": {category.id: category.type for category in categories},
+        "currentCategory": None
+      })
+    
 
   '''
   @TODO: 
@@ -48,6 +93,24 @@ def create_app(test_config=None):
   TEST: When you click the trash icon next to a question, the question will be removed.
   This removal will persist in the database and when you refresh the page. 
   '''
+  @app.route('/questions/<int:question_id>', methods=['DELETE'])
+  def delete_question(question_id):
+    try:
+      question = Question.query.filter(Question.id == question_id).one_or_none()
+
+      if question is None:
+        abort(404)
+
+      question.delete()
+      # selections = Question.query.order_by(Question.id).all()
+      # current_questions = pagination(request, selections)
+
+      return jsonify({
+        "success": True,
+      })
+
+    except:
+      abort(422)
 
   '''
   @TODO: 
@@ -59,6 +122,31 @@ def create_app(test_config=None):
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.  
   '''
+  
+  @app.route("/questions", methods=['POST'])
+  def create_question():
+    body = request.get_json()
+
+    if not ('question' in body and 'answer' in body and 'difficulty' in body and 'category' in body):
+        abort(422)
+
+    new_question = body.get('question')
+    new_answer = body.get('answer')
+    new_difficulty = body.get('difficulty')
+    new_category = body.get('category')
+
+    try:
+      question = Question(question=new_question, answer=new_answer, difficulty=new_difficulty, category=new_category)
+      question.insert()
+
+      return jsonify({
+          'success': True,
+          'created': question.id,
+      })
+
+    except:
+      abort(422)
+
 
   '''
   @TODO: 
@@ -70,6 +158,24 @@ def create_app(test_config=None):
   only question that include that string within their question. 
   Try using the word "title" to start. 
   '''
+  @app.route('/questions/search', methods=['POST'])
+  def search_questions():
+    body = request.get_json()
+    search_term = body.get('searchTerm')
+
+    if search_term:   
+      questions = Question.query.filter(Question.question.ilike(f"%{search_term}%")).all()
+
+      formatted_questions = [question.format() for question in questions]
+
+      return jsonify({
+        "success": True,
+        'questions': formatted_questions,
+        'totalQuestions': len(formatted_questions),
+        'currentCategory': None
+      })
+    else:
+      abort(404)
 
   '''
   @TODO: 
@@ -79,6 +185,24 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
+  @app.route('/categories/<int:category_id>/questions')
+  def get_questions_by_category(category_id):
+
+    try:
+      questions = Question.query.filter(Question.category == category_id).all()
+      category = Category.query.filter(Category.id == category_id).one_or_none()
+      formatted_questions = [question.format() for question in questions]
+      if len(questions) == 0:
+        abort(404)
+
+      return jsonify({
+        "success": True,
+        "questions": formatted_questions,
+        "totalQuestions": len(questions),
+        "currentCategory": category_id
+      })
+    except:
+      abort(422)
 
 
   '''
@@ -92,13 +216,57 @@ def create_app(test_config=None):
   one question at a time is displayed, the user is allowed to answer
   and shown whether they were correct or not. 
   '''
+  @app.route('/quizzes', methods=["POST"])
+  def get_quiz_by_category():
+    try:
+      body = request.get_json()
+
+      if not ('quiz_category' in body and 'previous_questions' in body):
+          abort(422)
+
+      category = body.get('quiz_category')
+      previous_questions = body.get('previous_questions')
+      print(category)
+
+      # when category is all
+      if category['type'] == 'click':
+        # notin_ mean not in 
+          available_questions = Question.query.filter(Question.id.notin_((previous_questions))).all()
+      else:
+          available_questions = Question.query.filter_by(category=category['id']).filter(Question.id.notin_((previous_questions))).all()
+
+      new_question = available_questions[random.randrange(0, len(available_questions))].format() if len(available_questions) > 0 else None
+
+      return jsonify({
+          'success': True,
+          'question': new_question
+      })
+
+    except:
+      abort(422)
 
   '''
   @TODO: 
   Create error handlers for all expected errors 
   including 404 and 422. 
   '''
-  
+  @app.errorhandler(404)
+  def not_found(error):
+    return jsonify({
+      "success": False, 
+      "error": 404, 
+      "message": "not found"
+    }), 404
+
+  @app.errorhandler(422)
+  def unprocessable(error):
+    return jsonify({
+      "success": False, 
+      'error': 422,
+      "message": 'unprocessable'
+    }), 422
+    
+
   return app
 
     
