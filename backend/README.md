@@ -77,35 +77,89 @@ One note before you delve into your tasks: for each endpoint, you are expected t
 
 
 
-## Review Comment to the Students
-```
-This README is missing documentation of your endpoints. Below is an example for your endpoint to get all categories. Please use it as a reference for creating your documentation and resubmit your code. 
+### API Reference
 
-Endpoints
-GET '/api/v1.0/categories'
-GET ...
-POST ...
-DELETE ...
+## Endpoints
+GET /categories
+Request Arguments: None
+Returns a dictionary of categories, show below
+````
+{
+  "categories": {
+    "1": "Science", 
+    "2": "Art", 
+    "3": "Geography", 
+    "4": "History", 
+    "5": "Entertainment", 
+    "6": "Sports"
+}
+````
+DELETE /questions/{id}
+Request Arguments: question's id
+Deletes the question of the given ID if it exists. Returns an object that contains success.
 
-GET '/api/v1.0/categories'
-- Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
-- Request Arguments: None
-- Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs. 
-{'1' : "Science",
-'2' : "Art",
-'3' : "Geography",
-'4' : "History",
-'5' : "Entertainment",
-'6' : "Sports"}
+````
+{
+  "success": true
+}
+````
+POST /questions/{id}
+Request Arguments: question's id
 
-```
+Creates a new question using the form information that user inserts. Returns the id of the created question id, success value
+````
+{
+  "created": 13,   
+  "success": true,  
+}
+````
+GET /categories/{id}/questions
+Request Arguments: category's id
 
+Returns a list of questions, currentCategory,  total_questions and success value
+````
+{
+  "success": true,   
+  "questions": [
+    {
+      "answer": "Lake Victoria", 
+      "category": "3", 
+      "difficulty": 2, 
+      "id": 13, 
+      "question": "What is the largest lake in Africa?"
+    }, 
+    {
+      "answer": "The Palace of Versailles", 
+      "category": "3", 
+      "difficulty": 3, 
+      "id": 14, 
+      "question": "In which royal palace would you find the Hall of Mirrors?"
+    }, 
+    {
+      "answer": "Agra", 
+      "category": "3", 
+      "difficulty": 2, 
+      "id": 15, 
+      "question": "The Taj Mahal is located in which Indian city?"
+    }
+  ], 
+  "currentCategory": "Geography", 
+  "totalQuestions": 3
+}
+````
+POST /quizzes
 
-## Testing
-To run the tests, run
-```
-dropdb trivia_test
-createdb trivia_test
-psql trivia_test < trivia.psql
-python test_flaskr.py
-```
+recive the actual question and the category
+return the next question in the same category and success value.
+````
+{
+  "question": {
+    "answer": "Agra", 
+    "category": "3", 
+    "difficulty": 2, 
+    "id": 15, 
+    "question": "The Taj Mahal is located in which Indian city?"
+  }, 
+  "success": true
+}
+````
