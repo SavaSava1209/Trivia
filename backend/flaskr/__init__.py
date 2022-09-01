@@ -228,7 +228,7 @@ def create_app(test_config=None):
      
       # {'previous_questions': [], 'quiz_category': {'type': 'click', 'id': 0}}
       # {'type': 'click', 'id': 0}
-      print(previous_questions)
+      # print(previous_questions)
       # when category is all
       if quiz_category['type'] == 'click':
         # notin_ mean not in 
